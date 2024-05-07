@@ -10,15 +10,73 @@
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
+      "url": "https://api.u301.com/v2"
     }
   ],
   "security": [
     {
       "bearerAuth": []
-    }
+    },
+    {}
   ],
   "paths": {
+    "/shorten": {
+      "get": {
+        "security":[
+          {}
+        ],
+        "description": "Shorten a link",
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "description": "The long url to shorten. Must start with http:// or https://",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "name": "title",
+            "in": "query",
+            "description": "The title of the link",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "domainId",
+            "in": "query",
+            "description": "Domain id that you want to use for the short link.",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shortened url",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShortenedUrl"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/plants": {
       "get": {
         "description": "Returns all plants from the system that the user has access to",
@@ -41,7 +99,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/Plant"
+                    "$ref": "#/components/schemas/ShortenedUrl"
                   }
                 }
               }
@@ -78,7 +136,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Plant"
+                  "$ref": "#/components/schemas/ShortenedUrl"
                 }
               }
             }
@@ -132,18 +190,28 @@
   },
   "components": {
     "schemas": {
-      "Plant": {
+      "ShortenedUrl": {
         "required": [
-          "name"
+          "code",
+          "urlPrefix",
+          "url"
         ],
         "type": "object",
         "properties": {
-          "name": {
-            "description": "The name of the plant",
+          "code": {
+            "description": "The short url code",
             "type": "string"
           },
-          "tag": {
-            "description": "Tag to specify the type",
+          "url": {
+            "description": "The normalized original url",
+            "type": "string"
+          },
+          "status": {
+            "description": "Status of the shortened url, it could be 'public', 'under_review' and 'blocked'",
+            "type": "string"
+          },
+          "shortened": {
+            "description": "The shortened url",
             "type": "string"
           }
         }
@@ -151,7 +219,7 @@
       "NewPlant": {
         "allOf": [
           {
-            "$ref": "#/components/schemas/Plant"
+            "$ref": "#/components/schemas/ShortenedUrl"
           },
           {
             "required": [
